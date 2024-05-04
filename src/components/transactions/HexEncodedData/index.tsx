@@ -3,8 +3,8 @@ import { Box, Link } from '@mui/material'
 import type { ReactElement } from 'react'
 import { useEffect, useState } from 'react'
 import css from './styles.module.css'
-import { TransactionDescription, Interface as ethersInterface, formatEther } from 'ethers'
-import { upsertABIEntry, selectContractABIByChain } from '@/store/contractABISlice'
+import { Interface as ethersInterface, formatEther } from 'ethers'
+import { upsertABIEntry } from '@/store/contractABISlice'
 import { useCurrentChain } from '@/hooks/useChains'
 import { useAppDispatch } from '@/store'
 import useContractABI from '@/hooks/useContractABI'
@@ -23,10 +23,10 @@ interface TransactionParameter {
 }
 
 interface TransactionDetails {
-  name: string;
-  selector: string;
-  signature: string;
-  value: bigint;
+  name: string
+  selector: string
+  signature: string
+  value: bigint
   args: TransactionParameter[]
 }
 
@@ -44,12 +44,14 @@ export const HexEncodedData = ({ hexData, title, tx, limit = 20 }: Props): React
   const [thisABI, setThisABI] = useState([])
   const [thisTXN, setThisTXN] = useState<TransactionDetails>()
 
-
   useEffect(() => {
-
     const fetchAbi = async (chainId: string, contractAddress: string) => {
-      const apiKey = "YourApiKeyToken"
-      const uri = "https://api-sepolia.etherscan.io/api?module=contract&action=getabi&address=" + contractAddress + "&apikey=" + apiKey;
+      const apiKey = 'YourApiKeyToken'
+      const uri =
+        'https://api-sepolia.etherscan.io/api?module=contract&action=getabi&address=' +
+        contractAddress +
+        '&apikey=' +
+        apiKey
       const response = await fetch(uri)
       if (!response.ok) {
         throw new Error(`Error fetching ABI from etherscan api ${uri}`)
@@ -58,60 +60,60 @@ export const HexEncodedData = ({ hexData, title, tx, limit = 20 }: Props): React
       const data = json.data || json.result || json
 
       return {
-        chainId: chainId,
+        chainId,
         address: contractAddress,
-        abi: data
+        abi: data,
       }
     }
 
     if (chain && tx) {
-      if (typeof contractABI[tx.to] === "undefined") {
-        console.log("1 - Fetching abi for contract", tx.to);
-        const abi = fetchAbi(chain.chainId, tx.to);
+      if (typeof contractABI[tx.to] === 'undefined') {
+        console.log('1 - Fetching abi for contract', tx.to)
+        const abi = fetchAbi(chain.chainId, tx.to)
         Promise.resolve(abi).then((value: any) => {
-          console.log("2 - Loaded new abi for contract", value.address);
+          console.log('2 - Loaded new abi for contract', value.address)
           dispatch(upsertABIEntry({ ...value }))
-        });
+        })
       } else {
-        console.log("1 - ABI Exists for contract", tx.to);
+        console.log('1 - ABI Exists for contract', tx.to)
         setThisABI(contractABI[tx.to])
       }
     }
-  }, [contractABI, chain, tx])
+  }, [dispatch, contractABI, chain, tx])
 
   useEffect(() => {
-    if (typeof thisABI[0] === "string") {
+    if (typeof thisABI[0] === 'string') {
       console.log('HexEncodedData->hexData', title, hexData)
 
-      const cinterface = new ethersInterface(thisABI);
-      const res = cinterface.parseTransaction(tx);
+      const cinterface = new ethersInterface(thisABI)
+      const res = cinterface.parseTransaction(tx)
 
       const transaction: TransactionDetails = {
-        name: "Function Name",
-        selector: "selector",
-        signature: "tuple(type,type)",
+        name: 'Function Name',
+        selector: 'selector',
+        signature: 'tuple(type,type)',
         value: BigInt(0),
-        args: []
+        args: [],
       }
 
       if (res) {
-        transaction.name = res.name;
-        transaction.selector = res.selector;
-        transaction.signature = res.signature;
-        transaction.value = res.value;
+        transaction.name = res.name
+        transaction.selector = res.selector
+        transaction.signature = res.signature
+        transaction.value = res.value
 
-        const args = res.args.toObject();
-        const keys = Object.keys(args);
-        const values = Object.values(args);
+        const args = res.args.toObject()
+        const keys = Object.keys(args)
+        const values = Object.values(args)
         for (let i = 0; i < keys.length; i++) {
           transaction.args.push({
-            type: "unknown",
+            type: 'unknown',
             name: keys[i],
             value: values[i],
           })
         }
 
-        console.log("transaction.args", transaction.args)
+        console.log('transaction.args', transaction.args)
         // transaction.args = res.args;
 
         // const decoded = cinterface.decodeFunctionData(res.signature, tx.data)
@@ -123,16 +125,12 @@ export const HexEncodedData = ({ hexData, title, tx, limit = 20 }: Props): React
         // cinterface._decodeParams()
       }
 
-      setThisTXN(transaction);
-      console.log(transaction);
-
+      setThisTXN(transaction)
+      console.log(transaction)
 
       // res.args
-
-
     }
-  }, [thisABI]);
-
+  }, [hexData, thisABI])
 
   // if (contractABI !== "") {
   //   console.log("contractABI", typeof (contractABI), contractABI);
@@ -141,17 +139,14 @@ export const HexEncodedData = ({ hexData, title, tx, limit = 20 }: Props): React
   //   console.log("res", res);
   // }
 
-
   // async function decodeData() {
   //   const apiKey = "YourApiKeyToken"
   //   const contractAddress = tx.to;
   //   const url = "https://api.etherscan.io/api?module=contract&action=getabi&address="+contractAddress+"&apikey="+apiKey;
 
-  //   const abi = 
+  //   const abi =
 
   // }
-
-
 
   return (
     <>
@@ -178,18 +173,16 @@ export const HexEncodedData = ({ hexData, title, tx, limit = 20 }: Props): React
       </Box>
 
       <Box className={css.encodedData}>
-        <span><b>Decoding:</b></span>
+        <span>
+          <b>Decoding:</b>
+        </span>
       </Box>
       <Box data-testid="tx-hexData-thisTXN-signature" className={css.encodedData}>
         <>
           <span>
             <b>Method Signature: </b>
           </span>
-          {thisTXN ? (
-            <span> {thisTXN.signature}</span>
-          ) : (
-            <span>Loading...</span>
-          )}
+          {thisTXN ? <span> {thisTXN.signature}</span> : <span>Loading...</span>}
         </>
       </Box>
 
@@ -198,11 +191,7 @@ export const HexEncodedData = ({ hexData, title, tx, limit = 20 }: Props): React
           <span>
             <b>ETH Value: </b>
           </span>
-          {thisTXN ? (
-            <span> {formatEther(thisTXN.value.toString())} ETH</span>
-          ) : (
-            <span>Loading...</span>
-          )}
+          {thisTXN ? <span> {formatEther(thisTXN.value.toString())} ETH</span> : <span>Loading...</span>}
         </>
       </Box>
 
@@ -211,11 +200,7 @@ export const HexEncodedData = ({ hexData, title, tx, limit = 20 }: Props): React
           <span>
             <b>Method Name: </b>
           </span>
-          {thisTXN ? (
-            <span> {thisTXN.name}</span>
-          ) : (
-            <span>Loading...</span>
-          )}
+          {thisTXN ? <span> {thisTXN.name}</span> : <span>Loading...</span>}
         </>
       </Box>
 
@@ -246,7 +231,6 @@ export const HexEncodedData = ({ hexData, title, tx, limit = 20 }: Props): React
                     </>
                   )
                 })}
-
               </table>
             </>
           ) : (

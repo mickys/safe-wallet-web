@@ -19,7 +19,6 @@ export const contractABISlice = createSlice({
   name: 'contractABI',
   initialState,
   reducers: {
-
     setABI: (_, action: PayloadAction<ContractABIState>): ContractABIState => {
       return action.payload
     },
@@ -46,4 +45,3 @@ export const selectContractABIByChain = createSelector(
     return chainId ? validAddresses || {} : {}
   },
 )
-
