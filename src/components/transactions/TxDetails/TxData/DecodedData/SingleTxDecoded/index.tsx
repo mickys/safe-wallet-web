@@ -45,7 +45,7 @@ export const SingleTxDecoded = ({
     details = <MethodDetails data={tx.dataDecoded} addressInfoIndex={txData.addressInfoIndex} />
   } else if (tx.data) {
     // If data is not decoded in the backend response
-    details = <HexEncodedData title="Data (hex encoded)" hexData={tx.data} />
+    details = <HexEncodedData title="Data (hex encoded)" hexData={tx.data} tx={tx} />
   }
 
   const addressInfo = txData.addressInfoIndex?.[tx.to]
